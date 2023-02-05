@@ -74,3 +74,40 @@ def get_vk_connection():
     vk_upload = get_vk_upload(vk_session)
     vk_long_poll = get_vk_long_poll(vk_session, vk_group_id)
     return vk_upload, vk_upload, vk_long_poll
+
+
+def get_roles_filename():
+    roles_filename = os.environ.get("ROLES_FILE", None)
+    return roles_filename
+
+
+def get_roles_config_from_file(roles_filename):
+    with open(roles_filename) as file:
+        roles_json = json.load(file)
+    return roles_json
+
+
+def get_admins_ids_from_config(roles_configuration):
+    admins_ids = roles_configuration["admin"]
+    return admins_ids
+
+
+def get_roles_configuration():
+    roles_filename = get_roles_filename()
+    roles_config = get_roles_config_from_file(roles_filename)
+    return roles_config
+
+
+def vk_send_message(vk_session, user_id, message=None, keyboard=None, pic_name=None):
+    if message is None:
+        message = ""
+    post = {
+        'user_id': user_id,
+        'message': message,
+        # 'random_id': random.randint(0, 2 ** 64),
+    }
+    if pic_name is not None:
+        post['attachment'] = pic_name
+    if keyboard is not None:
+        post['keyboard'] = keyboard.get_keyboard()
+    vk_session.method('messages.send', post)
