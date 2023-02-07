@@ -1,5 +1,10 @@
 import os
 import json
+import random
+import logging
+import logging.config
+import datetime
+import shutil
 
 import vk_api
 
@@ -73,7 +78,7 @@ def get_vk_connection():
     vk_group_id = get_vk_group_id()
     vk_upload = get_vk_upload(vk_session)
     vk_long_poll = get_vk_long_poll(vk_session, vk_group_id)
-    return vk_upload, vk_upload, vk_long_poll
+    return vk_session, vk_upload, vk_long_poll
 
 
 def get_roles_filename():
@@ -104,10 +109,29 @@ def vk_send_message(vk_session, user_id, message=None, keyboard=None, pic_name=N
     post = {
         'user_id': user_id,
         'message': message,
-        # 'random_id': random.randint(0, 2 ** 64),
+        'random_id': random.randint(0, 2 ** 64)
     }
     if pic_name is not None:
         post['attachment'] = pic_name
     if keyboard is not None:
         post['keyboard'] = keyboard.get_keyboard()
     vk_session.method('messages.send', post)
+
+
+def get_log_filename():
+    log_filename = os.environ.get("LOG_FILENAME", None)
+    return log_filename
+
+
+def initialize_logging():
+    log_filename = get_log_filename()
+    if not os.path.exists(log_filename):
+        with open(log_filename, 'w', encoding='utf-8'):
+            pass
+    logging.config.fileConfig(
+        fname='logging.conf',
+        disable_existing_loggers=False,
+        defaults={
+            'logfilename': log_filename
+        }
+    )
